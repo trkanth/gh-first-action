@@ -44,4 +44,18 @@ jobs:
         run: echo "Service Testing"
 
   approval:
-    runs-o
+    runs-on: ubuntu-latest
+    needs: service_testing
+    environment: qa-approval   # This enables a manual approval in GitHub
+    steps:
+      - name: Waiting for QA Approval
+        run: echo "QA Approval Granted"
+
+  deploy_qa:
+    runs-on: ubuntu-latest
+    needs: approval
+    steps:
+      - name: Terraform Apply (QA)
+        run: echo "TF Apply (QA)"
+      - name: Deploy App (QA)
+        run: echo "Deploy App (QA)"
