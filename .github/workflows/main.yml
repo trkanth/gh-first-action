@@ -1,0 +1,47 @@
+name: Full Pipeline
+
+on:
+  workflow_dispatch:   # Manual trigger
+
+jobs:
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Unit Test
+        run: echo "Unit test"
+      - name: Style Coding
+        run: echo "Style coding checks"
+
+  build:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: Build
+        run: echo "Build"
+
+  plan:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Terraform Plan
+        run: echo "TF Plan"
+
+  deploy_dev:
+    runs-on: ubuntu-latest
+    needs: plan
+    steps:
+      - name: Terraform Apply (Dev)
+        run: echo "TF Apply (Dev)"
+      - name: Deploy App (Dev)
+        run: echo "Deploy App (Dev)"
+
+  service_testing:
+    runs-on: ubuntu-latest
+    needs: deploy_dev
+    steps:
+      - name: Service Testing
+        run: echo "Service Testing"
+
+  approval:
+    runs-o
