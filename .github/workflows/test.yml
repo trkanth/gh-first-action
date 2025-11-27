@@ -1,5 +1,6 @@
 name: Test Project
-on: push
+on:
+  workflow_dispatch:   # Manual trigger
 jobs: 
   test:
     runs-on: ubunut-latest
