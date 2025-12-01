@@ -10,26 +10,30 @@ jobs:
     steps:
       - name: Unit Test
         run: echo "Unit test"
-      - name: Style Coding
-        run: echo "Style coding checks"
+      - name: Style Checking
+        run: echo "Style Checking"
+      - name: Code Quality
+        run: echo "Code Quality"
+      - name: Code Scanning
+        run: echo "Code Scanning"
 
-  build:
+  Build:
     runs-on: ubuntu-latest
-    needs: test
+    needs: Test
     steps:
       - name: Build
         run: echo "Build"
 
-  plan:
+  Plan:
     runs-on: ubuntu-latest
-    needs: build
+    needs: Build
     steps:
       - name: Terraform Plan
         run: echo "TF Plan"
 
-  deploy_dev:
+  Deploy DEV:
     runs-on: ubuntu-latest
-    needs: plan
+    needs: Plan
     steps:
       - name: Terraform Apply (Dev)
         run: echo "TF Apply (Dev)"
@@ -38,7 +42,7 @@ jobs:
 
   service_testing:
     runs-on: ubuntu-latest
-    needs: deploy_dev
+    needs: Deploy Dev
     steps:
       - name: Service Testing
         run: echo "Service Testing"
