@@ -1,4 +1,4 @@
-name: Full Pipeline
+name: Feature Branch
 
 on:
   workflow_dispatch:   # Manual trigger
