@@ -2,6 +2,9 @@ name: Full Pipeline
 
 on:
   workflow_dispatch:   # Manual trigger for the entire pipeline
+  push:
+    branches:
+      - "main" # Automatically trigger on any branch starting with 
 
 jobs:
 
