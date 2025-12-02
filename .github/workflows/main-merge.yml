@@ -5,6 +5,8 @@ on:
   push:
     branches:
       - "main" # Automatically trigger on any branch starting with 
+    paths-ignore:
+      - .github/workflows/** # Do not trigger when only workflow files are changed.
 
 jobs:
 
