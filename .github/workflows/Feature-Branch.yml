@@ -1,23 +1,33 @@
 name: Full Pipeline
 
 on:
-  workflow_dispatch:
+  workflow_dispatch:   # Manual trigger for the entire pipeline
 
 jobs:
 
+  # ---------------------------------------------------------
+  # 1. TEST JOB
+  # ---------------------------------------------------------
   Test:
     name: Test
     runs-on: ubuntu-latest
     steps:
       - name: Unit Test
         run: echo "Unit test"
+
       - name: Style Checking
         run: echo "Style Checking"
+
       - name: Code Quality
         run: echo "Code Quality"
+
       - name: Code Scanning
         run: echo "Code Scanning"
 
+
+  # ---------------------------------------------------------
+  # 2. BUILD JOB
+  # ---------------------------------------------------------
   Build:
     name: Build
     runs-on: ubuntu-latest
@@ -26,26 +36,37 @@ jobs:
       - name: Build
         run: echo "Build"
 
+
+  # ---------------------------------------------------------
+  # 3. PLAN JOB
+  # ---------------------------------------------------------
   Plan:
-    name: Plan
+    name: Terraform Plan
     runs-on: ubuntu-latest
     needs: Build
     steps:
-      - name: Terraform Plan
+      - name: TF Plan
         run: echo "TF Plan"
 
+
+  # ---------------------------------------------------------
+  # 4. DEPLOY TO DEV
+  # ---------------------------------------------------------
   Deploy_DEV:
-    name: Deploy DEV
+    name: Deploy Dev
     runs-on: ubuntu-latest
     needs: Plan
-    environment:
-      name: dev
+    environment: dev     # Dev environment (no approval required)
     steps:
-      - name: Terraform Apply (Dev)
+      - name: TF Apply (Dev)
         run: echo "TF Apply (Dev)"
       - name: Deploy App (Dev)
         run: echo "Deploy App (Dev)"
 
+
+  # ---------------------------------------------------------
+  # 5. SERVICE TESTING
+  # ---------------------------------------------------------
   Service_Testing:
     name: Service Testing
     runs-on: ubuntu-latest
@@ -54,28 +75,41 @@ jobs:
       - name: Service Testing
         run: echo "Service Testing"
 
+
+  # ---------------------------------------------------------
+  # 6. QA APPROVAL (Manual Approval Gate)
+  # ---------------------------------------------------------
   QA_Approval:
     name: QA Approval
     runs-on: ubuntu-latest
     needs: Service_Testing
+
+    # 🔥 Environment name changed here → from qa-approval to qa
     environment:
-      name: qa-approval   # GitHub environment providing manual approval
+      name: qa        # This environment MUST require manual approval
+
     steps:
       - name: Waiting for QA Approval
         run: echo "QA Approval Granted"
 
+
+  # ---------------------------------------------------------
+  # 7. DEPLOY TO QA (No approval here)
+  # ---------------------------------------------------------
   Deploy_QA:
     name: Deploy QA
     runs-on: ubuntu-latest
     needs: QA_Approval
-    environment:
-      name: qa
     steps:
-      - name: Terraform Apply (QA)
+      - name: TF Apply (QA)
         run: echo "TF Apply (QA)"
       - name: Deploy App (QA)
         run: echo "Deploy App (QA)"
 
+
+  # ---------------------------------------------------------
+  # 8. SYSTEM TESTING
+  # ---------------------------------------------------------
   System_Testing:
     name: System Testing
     runs-on: ubuntu-latest
@@ -84,16 +118,21 @@ jobs:
       - name: System Testing
         run: echo "System Testing"
 
+
+  # ---------------------------------------------------------
+  # 9. DEPLOY TO PRODUCTION (Manual Approval)
+  # ---------------------------------------------------------
   Deploy_PRD:
     name: Deploy Production
     runs-on: ubuntu-latest
     needs: System_Testing
+
+    # Production also requires approval in GitHub environment settings
     environment:
-      name: production   # This creates the production approval gate
+      name: production
+
     steps:
-      - name: Waiting for Production Approval
-        run: echo "Production Approval Granted"
       - name: TF Apply (PRD)
-        run: echo "TF Apply"
+        run: echo "TF Apply (PRD)"
       - name: Deploy App (PRD)
-        run: echo "Deploy Production"
+        run: echo "Deploy App (PRD)"
