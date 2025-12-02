@@ -1,52 +1,95 @@
 name: Hotfix Pipeline
 
+# ---------------------------------------------------------
+# Workflow triggers:
+#  - manual execution (workflow_dispatch)
+#  - automatic execution when pushing to hotfix/* branches
+# ---------------------------------------------------------
 on:
-  workflow_dispatch:   # ⬅ manual trigger
+  workflow_dispatch:
+  push:
+    branches:
+      - hotfix/**
 
 jobs:
+
+  # ---------------------------------------------------------
+  # 1. BUILD JOB — compiles the hotfix code
+  # ---------------------------------------------------------
   build:
+    name: Build
     runs-on: ubuntu-latest
     steps:
       - name: Build
-        run: echo "Build step"
+        run: echo "Build"
 
-  tf_plan:
+
+  # ---------------------------------------------------------
+  # 2. TERRAFORM PLAN — preview PRD changes
+  # ---------------------------------------------------------
+  tf-plan:
+    name: Terraform Plan
     runs-on: ubuntu-latest
     needs: build
     steps:
-      - name: Terraform Plan
+      - name: TF Plan
         run: echo "TF Plan"
 
-  approve_plan:
-    needs: tf_plan
+
+  # ---------------------------------------------------------
+  # 3. APPROVAL BEFORE APPLY — PRD environment approval gate
+  # ---------------------------------------------------------
+  approval-before-apply:
+    name: Production Approval Before Apply
     runs-on: ubuntu-latest
+    needs: tf-plan
+
+    # 🔥 PRD approval is controlled via the "production" environment
     environment:
-      name: approval-plan
-      url: https://example.com
-    steps:
-      - name: Waiting for approval
-        run: echo "Plan approval granted"
+      name: production
 
-  tf_apply:
-    runs-on: ubuntu-latest
-    needs: approve_plan
     steps:
-      - name: Terraform Apply (PRD)
-        run: echo "TF Apply PRD"
+      - name: Approval Gate Before TF Apply
+        run: echo "Gated Approval (Before Apply)"
 
-  approve_deploy:
-    needs: tf_apply
+
+  # ---------------------------------------------------------
+  # 4. TF APPLY — apply Terraform into PRD after approval
+  # ---------------------------------------------------------
+  tf-apply:
+    name: Terraform Apply Production
     runs-on: ubuntu-latest
+    needs: approval-before-apply
+    steps:
+      - name: TF Apply (PRD)
+        run: echo "TF Apply (PRD)"
+
+
+  # ---------------------------------------------------------
+  # 5. APPROVAL BEFORE DEPLOY — second gate before deployment
+  # ---------------------------------------------------------
+  approval-before-deploy:
+    name: Production Approval Before Deploy
+    runs-on: ubuntu-latest
+    needs: tf-apply
+
+    # 🔥 Using QA environment since you requested only "qa" & "production"
+    #    If you want production here also, let me know.
     environment:
-      name: approval-deploy
-      url: https://example.com
-    steps:
-      - name: Waiting for deployment approval
-        run: echo "Deploy approval granted"
+      name: qa
 
-  deploy_app:
+    steps:
+      - name: Approval Gate Before Deploy
+        run: echo "Gated Approval (Before Deploy)"
+
+
+  # ---------------------------------------------------------
+  # 6. DEPLOY APP — final deployment to production
+  # ---------------------------------------------------------
+  deploy-app:
+    name: Deploy App Production
     runs-on: ubuntu-latest
-    needs: approve_deploy
+    needs: approval-before-deploy
     steps:
       - name: Deploy App (PRD)
-        run: echo "Deploy App PRD"
+        run: echo "Deploy App (PRD)"
