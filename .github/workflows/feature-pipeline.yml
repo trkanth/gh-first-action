@@ -1,0 +1,81 @@
+name: Feature Branch Pipeline
+
+# ---------------------------------------------------------
+# Triggers:
+# - Manual trigger (workflow_dispatch)
+# - Automatically on any push to branches starting with "feature/**"
+# ---------------------------------------------------------
+on:
+  workflow_dispatch:        # Manual execution
+  push:
+    branches:
+      - feature/**          # Auto-trigger for feature branches
+
+
+jobs:
+
+  # -------------------------------------------------------
+  # Job 1: Run all tests including style, code quality, scanning
+  # -------------------------------------------------------
+  Test:
+    name: Test               # Display name (no underscore)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Unit Test
+        run: echo "Unit test"
+      - name: Style Checking
+        run: echo "Style Checking"
+      - name: Code Quality
+        run: echo "Code Quality"
+      - name: Code Scanning
+        run: echo "Code Scanning"
+
+  # -------------------------------------------------------
+  # Job 2: Build application artifacts
+  # Runs only after successful Test job
+  # -------------------------------------------------------
+  Build:
+    name: Build
+    runs-on: ubuntu-latest
+    needs: Test
+    steps:
+      - name: Build
+        run: echo "Build"
+
+  # -------------------------------------------------------
+  # Job 3: Terraform Plan step
+  # Runs only after Build job completes
+  # -------------------------------------------------------
+  Plan:
+    name: Plan
+    runs-on: ubuntu-latest
+    needs: Build
+    steps:
+      - name: Terraform Plan
+        run: echo "TF Plan"
+
+  # -------------------------------------------------------
+  # Job 4: Deploy to Dev environment (no approval required)
+  # Performs TF Apply and application deployment
+  # -------------------------------------------------------
+  Deploy_DEV:
+    name: Deploy Dev          # Display name (no underscore)
+    runs-on: ubuntu-latest
+    needs: Plan
+    steps:
+      - name: Terraform Apply (Dev)
+        run: echo "TF Apply (Dev)"
+      - name: Deploy App (Dev)
+        run: echo "Deploy App (Dev)"
+
+  # -------------------------------------------------------
+  # Job 5: Service Testing
+  # Runs after successful deployment to Dev
+  # -------------------------------------------------------
+  Service_Testing:
+    name: Service Testing     # Display name (no underscore)
+    runs-on: ubuntu-latest
+    needs: Deploy_DEV
+    steps:
+      - name: Service Testing
+        run: echo "Service Testing"
